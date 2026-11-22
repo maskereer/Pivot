@@ -1,4 +1,45 @@
 {
-  "updatedAt": null,
-  "coins": {}
+  "updatedAt": "2026-11-22T06:42:24.751Z",
+  "coins": {
+    "BTC": {
+      "symbol": "BTCUSDT",
+      "price": 0,
+      "binanceOiUsd": 0,
+      "okxOiUsd": 2540586518,
+      "whales": {
+        "long": 20123269,
+        "short": 95349201,
+        "total": 115472470,
+        "mL": 1006163,
+        "mS": 3917874,
+        "pL": -87390,
+        "pS": 17960280,
+        "liqL": 0,
+        "liqS": 0,
+        "nLiq": 0,
+        "wallets": 6,
+        "n": 40
+      }
+    },
+    "ETH": {
+      "symbol": "ETHUSDT",
+      "price": 0,
+      "binanceOiUsd": 0,
+      "okxOiUsd": 1336600135,
+      "whales": {
+        "long": 33179,
+        "short": 79897491,
+        "total": 79930670,
+        "mL": 11060,
+        "mS": 3749309,
+        "pL": -4,
+        "pS": 23980776,
+        "liqL": 0,
+        "liqS": 0,
+        "nLiq": 0,
+        "wallets": 6,
+        "n": 40
+      }
+    }
+  }
 }
