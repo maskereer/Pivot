@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>INSTITUTIONAL RADAR AGGREGATE USD v4.8 (GitHub Ready)</title>
+<style>
+:root{--bg:#070b14;--panel:#0d1524;--panel-2:#121d32;--panel-3:#172540;--border:#1e2f4d;--text:#e7eef8;--muted:#8fa2c2;--green:#10b981;--green-soft:rgba(16,185,129,.14);--red:#ef4444;--red-soft:rgba(239,68,68,.14);--amber:#f59e0b;--amber-soft:rgba(245,158,11,.14);--cyan:#22d3ee;--cyan-soft:rgba(34,211,238,.14);--violet-soft:rgba(167,139,250,.14)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.4;padding:10px}
+.wrap{max-width:1220px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:11px}
+.top-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
+.title-box h1{font-size:15px;font-weight:800;display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.title-box p{font-size:11px;color:var(--muted);margin-top:2px}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:999px;font-size:10px;font-weight:700;background:var(--panel-2);border:1px solid var(--border);color:var(--text);white-space:nowrap}
+.badge.live,.badge.long{background:var(--green-soft);border-color:rgba(16,185,129,.45);color:#6ee7b7}
+.badge.sim{background:var(--amber-soft);border-color:rgba(245,158,11,.45);color:#fcd34d}
+.badge.short{background:var(--red-soft);border-color:rgba(239,68,68,.45);color:#fca5a5}
+.badge.cyan{background:var(--cyan-soft);border-color:rgba(34,211,238,.45);color:#67e8f9}
+.badge.violet{background:var(--violet-soft);border-color:rgba(167,139,250,.45);color:#ddd6fe}
+.controls{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.btn,.tf-btn{background:var(--panel-2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:5px 9px;font-size:11px;font-weight:700;cursor:pointer}
+.btn.active,.tf-btn.active{background:var(--cyan);color:#041018;border-color:var(--cyan)}
+.btn.refresh{background:var(--green-soft);border-color:rgba(16,185,129,.45);color:#6ee7b7}
+.pivot-card{border-radius:12px;padding:11px;background:linear-gradient(135deg,rgba(239,68,68,.12),rgba(13,21,36,.96));border:1px solid rgba(239,68,68,.38);display:flex;flex-direction:column;gap:8px}
+.pivot-card.long-mode{background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(13,21,36,.96));border-color:rgba(16,185,129,.38)}
+.pivot-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap}
+.pivot-title{font-size:12.5px;font-weight:800;color:#fca5a5}
+.pivot-card.long-mode .pivot-title{color:#6ee7b7}
+.pivot-sub{font-size:11.5px;margin-top:2px}
+.mini-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.mini-box{background:rgba(7,11,20,.65);border:1px solid var(--border);border-radius:8px;padding:6px 7px;font-size:10.5px}
+.mini-box .lbl{color:var(--muted);display:block;font-size:10px}
+.mini-box .val{font-weight:700;margin-top:1px;display:block}
+.grid-2-main{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.stat-box{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:9px 10px}
+.stat-head{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.stat-num{font-size:17px;font-weight:800;margin-top:3px}
+.stat-foot{font-size:10.5px;color:var(--muted);margin-top:2px;display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap}
+.pos{color:#34d399}.neg{color:#f87171}.warn{color:#fbbf24}.violet-txt{color:#c4b5fd}.muted{color:var(--muted)}
+.section-title{font-size:12.5px;font-weight:800;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.section-note{font-size:11px;color:var(--muted);margin-bottom:8px}
+canvas{width:100%;height:235px;display:block;border-radius:8px;background:var(--panel-2);border:1px solid var(--border)}
+.magnets-grid,.levels-grid,.checks-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:6px}
+.magnet-box,.lvl-box{background:var(--panel-2);border:1px solid var(--border);border-radius:9px;padding:8px 9px;font-size:11px;display:flex;flex-direction:column;gap:3px}
+.magnet-top,.lvl-head{display:flex;justify-content:space-between;align-items:center;gap:6px;font-weight:800}
+.magnet-price,.lvl-price{font-size:13px;font-weight:800}
+.magnet-meta{font-size:10.5px;color:var(--muted)}
+.readiness-bar-wrap{margin-top:6px;display:flex;flex-direction:column;gap:8px}
+.readiness-row{display:flex;justify-content:space-between;font-size:11px;font-weight:700;margin-bottom:3px}
+.progress-track{height:8px;border-radius:999px;background:var(--panel-2);overflow:hidden;border:1px solid var(--border)}
+.progress-fill-long{height:100%;background:var(--green);transition:width .25s}
+.progress-fill-short{height:100%;background:var(--red);transition:width .25s}
+.checks-grid{gap:6px;margin-top:8px;font-size:10.5px}
+.check-pill{background:var(--panel-2);border:1px solid var(--border);border-radius:7px;padding:5px 7px;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.bias-box{margin-top:8px;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:8px;font-size:11px;display:flex;flex-direction:column;gap:6px}
+.sub-pair{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:4px}
+.sub-cell{background:var(--panel-3);border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:11px}
+.ratio-track{height:11px;border-radius:999px;overflow:hidden;display:flex;background:var(--panel-2);border:1px solid var(--border);margin:7px 0}
+.seg-long{background:var(--green);height:100%;transition:width .25s}
+.seg-short{background:var(--red);height:100%;transition:width .25s}
+.skew-bar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px;background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:7px 8px;font-size:11px}
+.venue-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px}
+.venue-card{background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:6px 7px;font-size:10.5px}
+.venue-card.off{opacity:.55}
+.kv-table{display:flex;flex-direction:column;gap:5px;margin-top:8px;font-size:11px}
+.kv-item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:5px 8px;border-radius:7px;background:var(--panel-2)}
+.kv-item .right-val{font-weight:700;text-align:right}
+.tactical-list{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+.tac-item{background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:7px 9px;font-size:11px}
+.tac-top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700;margin-bottom:2px}
+.footer-note{text-align:center;font-size:10.5px;color:var(--muted);padding:4px 8px 10px}
+@media(max-width:640px){body{padding:7px}.card{padding:9px}.mini-strip{grid-template-columns:repeat(2,1fr)}.magnets-grid,.checks-grid,.levels-grid{grid-template-columns:1fr}.venue-grid{grid-template-columns:repeat(2,1fr)}.stat-num{font-size:15.5px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="card top-bar">
+  <div class="title-box">
+    <h1><span>INSTITUTIONAL RADAR AGGREGATE USD v4.8 (GitHub Ready)</span><span class="badge sim" id="mode-badge">ΦΟΡΤΩΣΗ...</span></h1>
+    <p>Dollar L/S Ratio, Net Capital Skew Δ, Liquidity Magnets, Pivot Readiness &amp; R1–R3 / S1–S3 Zones</p>
+  </div>
+  <div class="controls">
+    <span class="badge cyan" id="cov-badge">COVERAGE: --</span>
+    <button class="btn active" data-sym="BTCUSDT">BTC</button>
+    <button class="btn" data-sym="ETHUSDT">ETH</button>
+    <button class="btn refresh" id="btn-refresh">Ανανέωση</button>
+  </div>
+</div>
+
+<div class="pivot-card" id="pivot-card">
+  <div class="pivot-top">
+    <div>
+      <div class="pivot-title" id="pivot-title">--</div>
+      <div class="pivot-sub" id="pivot-desc">--</div>
+    </div>
+    <span class="badge short" id="pivot-badge">ΕΤΟΙΜΟΤΗΤΑ: --%</span>
+  </div>
+  <div class="mini-strip">
+    <div class="mini-box"><span class="lbl">Wick / Sweep</span><span class="val" id="m-wick">--</span></div>
+    <div class="mini-box"><span class="lbl">Agg. CVD</span><span class="val" id="m-cvd">--</span></div>
+    <div class="mini-box"><span class="lbl">Weighted Net $</span><span class="val" id="m-skew">--</span></div>
+    <div class="mini-box"><span class="lbl" id="m-ls-lbl">L/S Ratio ($)</span><span class="val" id="m-ls">--</span></div>
+  </div>
+</div>
+
+<div class="card" id="verdict-card">
+  <div class="section-title"><span>Weighted Verdict — πού κατευθύνεται η τιμή</span><span class="badge" id="vd-badge">--</span></div>
+  <div class="section-note">Κάθε πηγή ψηφίζει με βάρος = $ μέγεθος × αξιοπιστία. Το τελικό σήμα είναι το σταθμισμένο αποτέλεσμα, όχι ανάμειξη σε μία μπάρα. Δεν μετράνε: account ratios (όχι $) και wicks.</div>
+  <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700"><span class="neg">← ΠΤΩΤΙΚΟ</span><span id="vd-score">--</span><span class="pos">ΑΝΟΔΙΚΟ →</span></div>
+  <div class="progress-track" style="position:relative;margin:5px 0"><div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:#8fa2c2"></div><div id="vd-fill" style="position:absolute;top:0;bottom:0;left:50%;width:0"></div></div>
+  <div class="kv-table" id="vd-list"></div>
+  <div class="bias-box"><strong id="vd-target">--</strong><p class="muted" id="vd-note">--</p></div>
+</div>
+
+<div class="grid-2-main">
+  <div class="stat-box">
+    <div class="stat-head"><span>Συγκεντρωτική Τιμή</span><span id="s-chg">--</span></div>
+    <div class="stat-num" id="s-price">--</div>
+    <div class="stat-foot"><span id="s-px-src">Mean of venues</span><span id="s-sym">BTCUSDT</span></div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-head"><span>OI-Weighted Funding</span><span id="s-fund-timer">--:--:--</span></div>
+    <div class="stat-num" id="s-funding">--</div>
+    <div class="stat-foot"><span>Σταθμισμένο ανά OI</span><span id="s-fund-bias">--</span></div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-head"><span>Total Market OI ($)</span><span id="s-oi-src">Aggregate</span></div>
+    <div class="stat-num" id="s-oi">--</div>
+    <div class="stat-foot"><span id="s-oi-split">--</span><span id="s-refresh-ts">--:--:--</span></div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-head"><span>Next Magnet Pull</span><span class="violet-txt">LIQUIDITY MAGNET</span></div>
+    <div class="stat-num" id="s-next-magnet">--</div>
+    <div class="stat-foot"><span id="s-magnet-dist">Απόσταση: --</span><span id="s-magnet-fuel">--</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="section-title" style="margin-bottom:4px">
+    <span id="chart-heading">--</span>
+    <div class="controls">
+      <button class="tf-btn" data-tf="15m">15m</button>
+      <button class="tf-btn" data-tf="1h">1h</button>
+      <button class="tf-btn active" data-tf="4h">4h</button>
+      <button class="tf-btn" data-tf="1d">1d</button>
+    </div>
+  </div>
+  <div class="section-note" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:7px">
+    <span>🔴 Supply (R1–R3)</span><span>🟢 Demand (S1–S3)</span><span>🟠 Τιμή</span>
+  </div>
+  <canvas id="radar-canvas" width="900" height="240"></canvas>
+</div>
+
+<div class="card">
+  <div class="section-title"><span>Liquidity Magnets &amp; Pivot Targets</span><span class="badge violet" id="magnet-bias-badge">MAGNET SCAN</span></div>
+  <div class="section-note">Στόχοι έλξης από πραγματικά swing highs/lows. Η κατεύθυνση (πάνω/κάτω) προκύπτει από το Weighted Verdict.</div>
+  <div class="magnets-grid" id="magnets-grid"></div>
+</div>
+
+<div class="card">
+  <div class="section-title"><span>Αμφίδρομη Ετοιμότητα Pivot (από το Weighted Verdict)</span><span class="badge short" id="bias-pill">--</span></div>
+  <div class="readiness-bar-wrap">
+    <div>
+      <div class="readiness-row"><span class="pos">↑ Ετοιμότητα LONG Pivot</span><span class="pos" id="readiness-long-val">0%</span></div>
+      <div class="progress-track"><div class="progress-fill-long" id="readiness-long-bar" style="width:0%"></div></div>
+    </div>
+    <div>
+      <div class="readiness-row"><span class="neg">↓ Ετοιμότητα SHORT Pivot</span><span class="neg" id="readiness-short-val">0%</span></div>
+      <div class="progress-track"><div class="progress-fill-short" id="readiness-short-bar" style="width:0%"></div></div>
+    </div>
+  </div>
+  <div class="checks-grid" id="pivot-checks-grid"></div>
+  <div class="bias-box">
+    <strong id="bias-headline">--</strong>
+    <p id="bias-detail" class="muted">--</p>
+    <div class="sub-pair">
+      <div class="sub-cell"><span class="muted" style="display:block">Επόμενος Μαγνήτης Pivot</span><strong id="b-magnet-target">--</strong></div>
+      <div class="sub-cell"><span class="muted" style="display:block">Agg. CVD / Taker</span><strong id="b-cvd-taker">--</strong></div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="section-title"><span>Hyperliquid Whale Positions</span><span class="badge violet" id="wh-badge">--</span></div>
+  <div class="section-note" id="wh-note">Πραγματικές θέσεις των μεγαλύτερων wallets (leaderboard → clearinghouseState). Είναι δείγμα top wallets, όχι ολόκληρο το Hyperliquid.</div>
+  <div class="kv-table">
+    <div class="kv-item"><span>Total whale positions</span><span class="right-val" id="wh-total">--</span></div>
+    <div class="kv-item"><span>Long $ / Short $</span><span class="right-val" id="wh-ls">--</span></div>
+    <div class="kv-item"><span>Whale margin (L / S)</span><span class="right-val" id="wh-margin">--</span></div>
+    <div class="kv-item"><span>Unrealized PnL (Longs / Shorts)</span><span class="right-val" id="wh-pnl">--</span></div>
+    <div class="kv-item"><span>Net exposure</span><span class="right-val" id="wh-net">--</span></div>
+    <div class="kv-item"><span>Near liquidation (±5%)</span><span class="right-val" id="wh-liq">--</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="section-title"><span>Segments L/S (ξεχωριστά, χωρίς ανάμειξη)</span><span class="badge cyan" id="seg-badge">--</span></div>
+  <div class="section-note">Κάθε πηγή με τη δική της βάση: ποσά ($) ή λογαριασμοί. Η απόκλιση «έξυπνο vs κοινό» είναι συχνά πιο χρήσιμη από ένα ενιαίο νούμερο.</div>
+  <div class="kv-table" id="seg-list"></div>
+  <div class="bias-box"><strong id="seg-sig">--</strong></div>
+</div>
+
+<div class="card">
+  <div class="section-title"><span>Live Liquidations (WebSocket)</span><span class="badge" id="lq-status">--</span></div>
+  <div class="section-note">Πραγματικές εκκαθαρίσεις Binance, Bybit, OKX όσο η σελίδα είναι ανοιχτή. Η Binance στέλνει δείγμα, άρα τα σύνολα είναι ελάχιστο όριο.</div>
+  <div class="kv-table">
+    <div class="kv-item"><span>Τελευταία 5 λεπτά (Long liq / Short liq)</span><span class="right-val" id="lq-5m">--</span></div>
+    <div class="kv-item"><span>Τελευταία 1 ώρα</span><span class="right-val" id="lq-1h">--</span></div>
+    <div class="kv-item"><span>Από το άνοιγμα της σελίδας</span><span class="right-val" id="lq-sess">--</span></div>
+    <div class="kv-item"><span>Ανά venue (σύνολο)</span><span class="right-val" id="lq-venues">--</span></div>
+    <div class="kv-item"><span>Μεγαλύτερη (1ω)</span><span class="right-val" id="lq-max">--</span></div>
+    <div class="kv-item"><span>Σήμα</span><span class="right-val" id="lq-sig">--</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="section-title"><span>Ιστορικό &amp; Δ (Smart-money, OI)</span><span class="badge" id="hx-badge">--</span></div>
+  <div class="section-note">OI και τιμή: ιστορικό Binance (άμεσα). Whale/skew Δ: αποθηκεύονται στον browser κάθε 30" και γεμίζουν όσο η σελίδα τρέχει (έως 24ω).</div>
+  <div class="kv-table">
+    <div class="kv-item"><span>OI Δ (1ω / 24ω) • Binance</span><span class="right-val" id="hx-oi">--</span></div>
+    <div class="kv-item"><span>Τιμή Δ (1ω / 24ω)</span><span class="right-val" id="hx-px">--</span></div>
+    <div class="kv-item"><span>Ερμηνεία OI + τιμής (1ω)</span><span class="right-val" id="hx-interp">--</span></div>
+    <div class="kv-item"><span>Weighted Net $ Δ (15λ / 1ω / 24ω)</span><span class="right-val" id="hx-skew">--</span></div>
+    <div class="kv-item"><span>Whale net exposure Δ (1ω / 24ω)</span><span class="right-val" id="hx-whale">--</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="section-title"><span>Spot vs Futures CVD</span><span class="badge" id="cvd-state-badge">FLOW</span></div>
+  <div class="section-note">Εμφανίζεται μόνο πραγματικό CVD από taker-buy volume (Binance). Όπου δεν υπάρχει πραγματικό δεδομένο, δεν εμφανίζεται τίποτα.</div>
+  <div class="kv-table">
+    <div class="kv-item"><span>Futures CVD (12 candles)</span><span class="right-val" id="cvd-fut">--</span></div>
+    <div class="kv-item"><span>Spot CVD (Binance, 12 candles)</span><span class="right-val" id="cvd-spot">--</span></div>
+    <div class="kv-item"><span>Taker Buy Ratio</span><span class="right-val" id="cvd-taker">--</span></div>
+    <div class="kv-item"><span>Κατάσταση Ροής</span><span class="right-val" id="cvd-flow-status">--</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="section-title"><span>Agg. Volume &amp; Wick Rejection</span><span class="badge" id="vol-regime-badge">--</span></div>
+  <div class="kv-table">
+    <div class="kv-item"><span>Dump Vol (κόκκινα candles)</span><span class="right-val neg" id="vol-dump">--</span></div>
+    <div class="kv-item"><span>Bounce Vol (πράσινα candles)</span><span class="right-val pos" id="vol-bounce">--</span></div>
+    <div class="kv-item"><span>Bounce / Dump Ratio</span><span class="right-val" id="vol-ratio">--</span></div>
+    <div class="kv-item"><span>Lower Wick (Long)</span><span class="right-val pos" id="wick-low">--</span></div>
+    <div class="kv-item"><span>Upper Wick (Short)</span><span class="right-val neg" id="wick-high">--</span></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="section-title"><span>Χάρτης Ρευστότητας &amp; Ζωνών (R1–R3 / S1–S3)</span><span class="badge" id="levels-tf-badge">TF: 4h</span></div>
+  <div class="section-note">Επίπεδα από πραγματικά swing highs/lows των τελευταίων 15 / 35 / 60 candles.</div>
+  <div class="levels-grid" id="levels-grid"></div>
+</div>
+
+<div class="card">
+  <div class="section-title"><span>Τακτικές Ζώνες Εκτέλεσης</span><span class="badge cyan">4-WAY ZONES</span></div>
+  <div class="tactical-list" id="tactical-list"></div>
+</div>
+
+<div class="footer-note">INSTITUTIONAL RADAR AGGREGATE USD v4.8 (GitHub Ready) • Real data: Binance • Bybit • OKX • Hyperliquid • Δεν αποτελεί επενδυτική συμβουλή</div>
+</div>
+
+<script>
+/* Αξιοπιστία ανά τύπο δεδομένου (0..1). Βάρος = $ μεγέθους × αξιοπιστία. Ρυθμίζεται εδώ. */
+const REL = { whale: 1.0, binTop: 0.35, flow: 0.10, liq: 0.5 };
+const STATE = { sym: "BTCUSDT", tf: "4h", prevSkew: {}, busy: false };
+const $ = id => document.getElementById(id);
+const T = (id, t, c) => { const e = $(id); if (!e) return; e.textContent = t; if (c !== undefined) e.className = c; };
+const H = (id, h) => { const e = $(id); if (e) e.innerHTML = h; };
+const ok = v => Number.isFinite(v) && v > 0;
+
+function fmtMoney(v, sign = false) {
+  if (!Number.isFinite(v)) return "--";
+  const a = Math.abs(v), s = v < 0 ? "-" : (sign && v > 0 ? "+" : "");
+  if (a >= 1e9) return s + "$" + (a / 1e9).toFixed(2) + "B";
+  if (a >= 1e6) return s + "$" + (a / 1e6).toFixed(2) + "M";
+  if (a >= 1e3) return s + "$" + (a / 1e3).toFixed(1) + "K";
+  return s + "$" + a.toFixed(0);
+}
+function fmtPrice(p) {
+  if (!Number.isFinite(p)) return "--";
+  if (p >= 1000) return "$" + p.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  if (p >= 1) return "$" + p.toFixed(4);
+  return "$" + p.toFixed(6);
+}
+const pct = (a, b) => ((a - b) / b * 100);
+const fpct = v => (v >= 0 ? "+" : "") + v.toFixed(2) + "%";
+
+async function J(url, opt, ms) {
+  const c = new AbortController(), t = setTimeout(() => c.abort(), ms || 4500);
+  try {
+    const r = await fetch(url, Object.assign({ cache: "no-store", signal: c.signal }, opt || {}));
+    if (!r.ok) return null;
+    return await r.json();
+  } catch (e) { return null; } finally { clearTimeout(t); }
+}
+
+const TF_MS = { "15m": 9e5, "1h": 36e5, "4h": 144e5, "1d": 864e5 };
+
+async function fetchVenues(sym, tf) {
+  const base = sym.replace(/USDT$/, "");
+  const by = { "15m": "15", "1h": "60", "4h": "240", "1d": "D" }[tf];
+  const okb = { "15m": "15m", "1h": "1H", "4h": "4H", "1d": "1D" }[tf];
+  const okId = base + "-USDT-SWAP";
+  const V = {
+    binance: { name: "Binance", ok: false, price: null, oi: null, funding: null, candles: null, longShare: null },
+    bybit: { name: "Bybit", ok: false, price: null, oi: null, funding: null, candles: null, longShare: null },
+    okx: { name: "OKX", ok: false, price: null, oi: null, funding: null, candles: null, longShare: null },
+    hl: { name: "Hyperliquid", ok: false, price: null, oi: null, funding: null, candles: null, longShare: null }
+  };
+  let spot = null;
+
+  const jobs = [
+    // Binance
+    (async () => {
+      const usdcSym = base + "USDC";
+      const coinPair = base + "_USD_PERP";
+      const [k, p, o, oUsdc, oCoin, ls, sk] = await Promise.all([
+        J(`https://fapi.binance.com/fapi/v1/klines?symbol=${sym}&interval=${tf}&limit=60`),
+        J(`https://fapi.binance.com/fapi/v1/premiumIndex?symbol=${sym}`),
+        J(`https://fapi.binance.com/fapi/v1/openInterest?symbol=${sym}`),
+        J(`https://fapi.binance.com/fapi/v1/openInterest?symbol=${usdcSym}`),
+        J(`https://dapi.binance.com/dapi/v1/openInterest?symbol=${coinPair}`),
+        J(`https://fapi.binance.com/futures/data/topLongShortPositionRatio?symbol=${sym}&period=${tf}&limit=1`),
+        J(`https://api.binance.com/api/v3/klines?symbol=${sym}&interval=${tf}&limit=60`)
+      ]);
+      const v = V.binance;
+      if (Array.isArray(k) && k.length >= 10) {
+        v.candles = k.map(r => ({ ts: +r[0], o: +r[1], h: +r[2], l: +r[3], c: +r[4], q: +r[7], buyQ: +r[10], real: true })).filter(c => ok(c.c));
+        v.price = v.candles[v.candles.length - 1].c; v.ok = v.candles.length >= 10;
+      }
+      if (p && ok(+p.markPrice)) { v.price = +p.markPrice; v.ok = true; }
+      if (p && Number.isFinite(+p.lastFundingRate)) v.funding = +p.lastFundingRate;
+      let binOi = 0, hasBinOi = false;
+      if (o && ok(+o.openInterest) && ok(v.price)) { binOi += +o.openInterest * v.price; hasBinOi = true; }
+      if (oUsdc && ok(+oUsdc.openInterest) && ok(v.price)) { binOi += +oUsdc.openInterest * v.price; hasBinOi = true; }
+      if (oCoin && ok(+oCoin.openInterest) && ok(v.price)) {
+        const mult = { BTC: 100, ETH: 10 }[base] || 100;
+        binOi += +oCoin.openInterest * mult;
+        hasBinOi = true;
+      }
+      if (hasBinOi) v.oi = binOi;
+      // position-based (notional-weighted) ratio of top traders
+      if (Array.isArray(ls) && ls[0] && Number.isFinite(+ls[0].longAccount)) v.longShare = +ls[0].longAccount;
+      if (Array.isArray(sk) && sk.length >= 10) spot = sk.map(r => ({ q: +r[7], buyQ: +r[10] }));
+    })(),
+    // Bybit
+    (async () => {
+      const [k, t] = await Promise.all([
+        J(`https://api.bybit.com/v5/market/kline?category=linear&symbol=${sym}&interval=${by}&limit=60`),
+        J(`https://api.bybit.com/v5/market/tickers?category=linear&symbol=${sym}`)
+      ]);
+      const v = V.bybit;
+      const list = k && k.result && k.result.list;
+      if (Array.isArray(list) && list.length >= 10) {
+        v.candles = list.slice().reverse().map(r => ({ ts: +r[0], o: +r[1], h: +r[2], l: +r[3], c: +r[4], q: +r[6], real: false })).filter(c => ok(c.c));
+        v.price = v.candles[v.candles.length - 1].c; v.ok = v.candles.length >= 10;
+      }
+      const tk = t && t.result && t.result.list && t.result.list[0];
+      if (tk) {
+        if (ok(+tk.lastPrice)) { v.price = +tk.lastPrice; v.ok = true; }
+        if (ok(+tk.openInterestValue)) v.oi = +tk.openInterestValue;
+        if (Number.isFinite(+tk.fundingRate)) v.funding = +tk.fundingRate;
+      }
+    })(),
+    // OKX
+    (async () => {
+      const okUsdId = base + "-USD-SWAP";
+      const [k, o, oUsd, f] = await Promise.all([
+        J(`https://www.okx.com/api/v5/market/candles?instId=${okId}&bar=${okb}&limit=60`),
+        J(`https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=${okId}`),
+        J(`https://www.okx.com/api/v5/public/open-interest?instType=SWAP&instId=${okUsdId}`),
+        J(`https://www.okx.com/api/v5/public/funding-rate?instId=${okId}`)
+      ]);
+      const v = V.okx;
+      if (k && Array.isArray(k.data) && k.data.length >= 10) {
+        v.candles = k.data.slice().reverse().map(r => ({ ts: +r[0], o: +r[1], h: +r[2], l: +r[3], c: +r[4], q: +r[7], real: false })).filter(c => ok(c.c));
+        v.price = v.candles[v.candles.length - 1].c; v.ok = v.candles.length >= 10;
+      }
+      let okxOi = 0, hasOkxOi = false;
+      if (o && o.data && o.data[0] && ok(+o.data[0].oiUsd)) { okxOi += +o.data[0].oiUsd; hasOkxOi = true; }
+      if (oUsd && oUsd.data && oUsd.data[0] && ok(+oUsd.data[0].oiUsd)) { okxOi += +oUsd.data[0].oiUsd; hasOkxOi = true; }
+      if (hasOkxOi) { v.oi = okxOi; v.ok = v.ok || ok(v.price); }
+      if (f && f.data && f.data[0] && Number.isFinite(+f.data[0].fundingRate)) v.funding = +f.data[0].fundingRate;
+    })(),
+    // Hyperliquid
+    (async () => {
+      const post = body => J("https://api.hyperliquid.xyz/info", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const now = Date.now();
+      const [m, c] = await Promise.all([
+        post({ type: "metaAndAssetCtxs" }),
+        post({ type: "candleSnapshot", req: { coin: base, interval: tf, startTime: now - TF_MS[tf] * 60, endTime: now } })
+      ]);
+      const v = V.hl;
+      if (Array.isArray(m) && m[0] && m[0].universe) {
+        const i = m[0].universe.findIndex(u => u.name === base);
+        const ctx = i >= 0 && m[1] && m[1][i];
+        if (ctx) {
+          if (ok(+ctx.markPx)) { v.price = +ctx.markPx; v.ok = true; }
+          if (ok(+ctx.openInterest) && ok(v.price)) v.oi = +ctx.openInterest * v.price;
+          if (Number.isFinite(+ctx.funding)) v.funding = +ctx.funding * 8;
+        }
+      }
+      if (Array.isArray(c) && c.length >= 10) {
+        v.candles = c.slice(-60).map(r => ({ ts: +r.t, o: +r.o, h: +r.h, l: +r.l, c: +r.c, q: (+r.v || 0) * (+r.c), real: false })).filter(x => ok(x.c));
+        if (!ok(v.price)) v.price = v.candles[v.candles.length - 1].c;
+        v.ok = true;
+      }
+    })()
+  ];
+  await Promise.allSettled(jobs);
+  return { V, spot };
+}
+
+function build(sym, tf, F) {
+  const V = F.V, keys = ["binance", "bybit", "okx", "hl"];
+  const active = keys.filter(k => V[k].ok);
+  if (!active.length) return null;
+
+  const prices = active.map(k => V[k].price).filter(ok);
+  const price = prices.reduce((a, b) => a + b, 0) / prices.length;
+  const oiK = keys.filter(k => ok(V[k].oi));
+  const oi = oiK.reduce((a, k) => a + V[k].oi, 0);
+
+  // OI-weighted funding
+  const fK = keys.filter(k => Number.isFinite(V[k].funding));
+  let funding = 0;
+  if (fK.length) {
+    const w = fK.map(k => ok(V[k].oi) ? V[k].oi : 1), ws = w.reduce((a, b) => a + b, 0);
+    funding = fK.reduce((a, k, i) => a + V[k].funding * w[i] / ws, 0);
+  }
+
+  // Primary candles
+  const pk = ["binance", "bybit", "okx", "hl"].find(k => V[k].candles && V[k].candles.length >= 10);
+  const candles = pk ? V[pk].candles : null;
+  if (!candles) return null;
+  const last = candles[candles.length - 1], prev = candles[candles.length - 2] || last;
+  const chg = prev.c > 0 ? pct(price, prev.c) : 0;
+
+  // Wicks / volumes on last 12 candles
+  const rec = candles.slice(-12);
+  let uS = 0, lS = 0, dump = 0, bounce = 0, estCvd = 0, estTot = 0;
+  rec.forEach(c => {
+    const rng = Math.max(1e-12, c.h - c.l);
+    uS += Math.max(0, c.h - Math.max(c.o, c.c)) / rng;
+    lS += Math.max(0, Math.min(c.o, c.c) - c.l) / rng;
+    if (c.c < c.o) dump += c.q; else bounce += c.q;
+    estCvd += c.q * Math.max(-1, Math.min(1, (c.c - c.o) / rng));
+    estTot += c.q;
+  });
+  const upperWick = Math.round(Math.min(85, Math.max(15, uS / Math.max(1e-6, uS + lS) * 100)));
+  const lowerWick = 100 - upperWick;
+
+  // REAL CVD (Binance taker data)
+  const bc = V.binance.candles && V.binance.candles.slice(-12);
+  let futCvd, taker, cvdReal = false;
+  if (bc && bc.length && bc[0].real) {
+    futCvd = bc.reduce((a, c) => a + (2 * c.buyQ - c.q), 0);
+    const tq = bc.reduce((a, c) => a + c.q, 0);
+    taker = tq > 0 ? bc.reduce((a, c) => a + c.buyQ, 0) / tq * 100 : 50;
+    cvdReal = true;
+  } else { futCvd = estCvd; taker = estTot > 0 ? 50 + estCvd / estTot * 17 : 50; }
+  let spotCvd = null;
+  if (F.spot) { const s = F.spot.slice(-12); spotCvd = s.reduce((a, c) => a + (2 * c.buyQ - c.q), 0); }
+
+  // Dollar L/S: notional-weighted ratio, only from venues that expose it
+  const wh = computeWhale(sym.replace(/USDT$/, ""), price);
+  const clamp = x => Math.max(-1, Math.min(1, x));
+  const srcs = [];
+  if (wh && wh.total > 0) srcs.push({ id: "whale", name: "Hyperliquid whales", basis: wh.wallets + " wallets • πραγματικές θέσεις $", gross: wh.total, score: (wh.long - wh.short) / wh.total, r: REL.whale, kind: "pos", long: wh.long, short: wh.short });
+  const bLS = V.binance.longShare;
+  if (bLS !== null && ok(V.binance.oi)) srcs.push({ id: "bintop", name: "Binance top traders", basis: "ratio θέσεων × OI Binance (προέκταση)", gross: V.binance.oi, score: 2 * bLS - 1, r: REL.binTop, kind: "pos", long: V.binance.oi * bLS, short: V.binance.oi * (1 - bLS) });
+  if (cvdReal && bc && bc.length) {
+    const vol = bc.reduce((a, c) => a + c.q, 0);
+    if (vol > 0) srcs.push({ id: "flow", name: "Binance taker flow (CVD)", basis: "12 candles " + tf + " • πραγματικό taker volume", gross: Math.min(vol, oi > 0 ? oi : vol), score: clamp(futCvd / vol), r: REL.flow, kind: "flow" });
+  }
+  const l1 = liqSum(36e5);
+  if (l1.L + l1.S > 0) srcs.push({ id: "liq", name: "Live εκκαθαρίσεις (1ω)", basis: "Binance + Bybit + OKX, πραγματικές", gross: l1.L + l1.S, score: clamp((l1.S - l1.L) / (l1.L + l1.S)), r: REL.liq, kind: "liq" });
+  srcs.forEach(o => { o.w = o.gross * o.r; });
+  const W = srcs.reduce((a, o) => a + o.w, 0);
+  let verdict = null;
+  if (srcs.length && W > 0) {
+    srcs.forEach(o => { o.share = o.w / W * 100; o.contrib = o.score * o.share; });
+    const score = srcs.reduce((a, o) => a + o.score * o.w, 0) / W;
+    const agree = srcs.filter(o => Math.sign(o.score) === Math.sign(score) && Math.abs(o.score) > 0.02).reduce((a, o) => a + o.share, 0);
+    verdict = { score, netEff: srcs.reduce((a, o) => a + o.score * o.w, 0), agree, W };
+  }
+  const posSrc = srcs.filter(o => o.kind === "pos").sort((a, b) => b.gross - a.gross)[0] || null;
+  const longUsd = posSrc ? posSrc.long : 0, shortUsd = posSrc ? posSrc.short : 0;
+  const longPct = posSrc ? longUsd / (longUsd + shortUsd) * 100 : 50, shortPct = 100 - longPct;
+  const lsRatio = posSrc && shortUsd > 0 ? longUsd / shortUsd : null, lsLabel = posSrc ? posSrc.name : null;
+  const netSkew = verdict ? verdict.netEff : 0;
+  const longReady = verdict ? Math.round((1 + verdict.score) / 2 * 100) : 50, shortReady = 100 - longReady;
+
+  // Levels from real swings
+  const hi = n => Math.max(...candles.slice(-n).map(c => c.h));
+  const lo = n => Math.min(...candles.slice(-n).map(c => c.l));
+  const r1 = Math.max(hi(15), price * 1.004), r2 = Math.max(hi(35), r1 * 1.004), r3 = Math.max(hi(60), r2 * 1.004);
+  const s1 = Math.min(lo(15), price * 0.996), s2 = Math.min(lo(35), s1 * 0.996), s3 = Math.min(lo(60), s2 * 0.996);
+  const L = (tag, name, val, kind, cls) => ({ tag, name, val, pct: fpct(pct(val, price)), kind, cls });
+  const levels = [
+    L("R3", "Deep Upper Squeeze", r3, "Supply", "neg"), L("R2", "Κύρια Αντίσταση", r2, "BSL / Supply", "neg"), L("R1", "Άμεση Αντίσταση", r1, "BSL / Intraday", "neg"),
+    L("S1", "Άμεση Στήριξη", s1, "SSL / Demand", "pos"), L("S2", "Κύρια Στήριξη", s2, "SSL / Major", "pos"), L("S3", "Deep Washout Floor", s3, "SSL / Demand", "pos")
+  ];
+
+  const isShort = verdict ? verdict.score < 0 : false;
+  const upM = r2 * 0.992, dnM = s2 * 1.006;
+  const primaryMagnet = isShort ? { label: "DOWN MAGNET (SSL / S2 Pocket)", price: dnM } : { label: "UP MAGNET (BSL / R2 Squeeze)", price: upM };
+  const magnets = [
+    { id: "M1", title: "Upper Squeeze Magnet (BSL)", price: upM, fuel: "Βάσει R2 swing high", tag: "SQUEEZE", cls: "neg" },
+    { id: "M2", title: "Lower Liquidation Magnet (SSL)", price: dnM, fuel: "Βάσει S2 swing low", tag: "WASHOUT", cls: "pos" },
+    { id: "M3", title: "Intraday Pivot Sweep Zone", price: isShort ? s1 : r1, fuel: isShort ? "S1 swing low" : "R1 swing high", tag: "PIVOT SWEEP", cls: "violet-txt" },
+    { id: "M4", title: "Extreme Tail Magnet", price: isShort ? s3 : r3, fuel: isShort ? "S3 swing low" : "R3 swing high", tag: "TAIL MAGNET", cls: "warn" }
+  ].map(m => Object.assign(m, { pct: fpct(pct(m.price, price)) }));
+
+  return { sym, tf, V, active, price, chg, oi, oiK, funding, candles, pk, upperWick, lowerWick, dump, bounce, futCvd, spotCvd, taker, cvdReal,
+    longUsd, shortUsd, longPct, shortPct, lsRatio, netSkew, lsLabel, verdict, srcs, shortReady, longReady, isShort, levels, magnets, primaryMagnet };
+}
+
+function drawChart(s) {
+  const cv = $("radar-canvas"), ctx = cv.getContext("2d"), w = cv.width, h = cv.height;
+  ctx.clearRect(0, 0, w, h);
+  const axisW = 80, plotW = w - axisW, top = 14, volH = 34, bot = 14, mainH = h - top - bot - volH;
+  const C = s.candles;
+  const minV = Math.min(...C.map(c => c.l), s.levels[4].val) * 0.997;
+  const maxV = Math.max(...C.map(c => c.h), s.levels[1].val) * 1.003;
+  const y = v => top + (1 - (v - minV) / ((maxV - minV) || 1)) * mainH;
+  const band = (v1, v2, fill, stroke, label, ly) => {
+    const a = Math.min(y(v1), y(v2)), b = Math.max(y(v1), y(v2), a + 12);
+    ctx.fillStyle = fill; ctx.fillRect(0, a, plotW, b - a);
+    ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(0, a); ctx.lineTo(plotW, a); ctx.moveTo(0, b); ctx.lineTo(plotW, b); ctx.stroke();
+    ctx.fillStyle = stroke; ctx.font = "bold 9.5px sans-serif"; ctx.fillText(label, 8, ly === "t" ? a + 11 : b - 4);
+  };
+  band(s.levels[1].val, s.levels[2].val, "rgba(239,68,68,.14)", "rgba(248,113,113,.8)", "SUPPLY ZONE (SELL)", "t");
+  band(s.levels[3].val, s.levels[4].val, "rgba(16,185,129,.14)", "rgba(52,211,153,.8)", "DEMAND ZONE (BUY)", "b");
+  ctx.strokeStyle = "rgba(148,163,184,.18)"; ctx.beginPath(); ctx.moveTo(plotW, top); ctx.lineTo(plotW, h - bot); ctx.stroke();
+  for (let t = 0; t <= 4; t++) {
+    const v = minV + (maxV - minV) * t / 4, ty = y(v);
+    ctx.strokeStyle = "rgba(148,163,184,.09)"; ctx.beginPath(); ctx.moveTo(0, ty); ctx.lineTo(plotW, ty); ctx.stroke();
+    ctx.fillStyle = "#8fa2c2"; ctx.font = "9.5px sans-serif"; ctx.fillText(fmtPrice(v), plotW + 5, ty + 3);
+  }
+  const maxQ = Math.max(...C.map(c => c.q || 1)) || 1, step = plotW / C.length, bw = Math.max(3, step * 0.62);
+  C.forEach((c, i) => {
+    const x = i * step + step / 2, bull = c.c >= c.o, col = bull ? "#10b981" : "#ef4444";
+    const vh = Math.max(2, (c.q || 1) / maxQ * (volH - 4));
+    ctx.fillStyle = bull ? "rgba(16,185,129,.34)" : "rgba(239,68,68,.34)"; ctx.fillRect(x - bw / 2, h - bot - vh, bw, vh);
+    ctx.strokeStyle = col; ctx.fillStyle = col; ctx.lineWidth = 1.25;
+    ctx.beginPath(); ctx.moveTo(x, y(c.h)); ctx.lineTo(x, y(c.l)); ctx.stroke();
+    ctx.fillRect(x - bw / 2, Math.min(y(c.o), y(c.c)), bw, Math.max(2.2, Math.abs(y(c.c) - y(c.o))));
+  });
+  const py = y(s.price);
+  ctx.save(); ctx.setLineDash([3, 3]); ctx.strokeStyle = "#f59e0b"; ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(plotW, py); ctx.stroke(); ctx.restore();
+  ctx.fillStyle = "#d97706"; ctx.fillRect(plotW + 2, py - 8, axisW - 4, 16);
+  ctx.fillStyle = "#fff"; ctx.font = "bold 9.5px sans-serif"; ctx.fillText(fmtPrice(s.price), plotW + 4, py + 3);
+}
+
+
+const SEED_WHALE_WALLETS = [
+  "0x20c2d95a3d71e9c3b80a08d0f1d2e3f4a5b6c7d8",
+  "0x5b3c737c0b0e7e46c2e2e4f3f2a1b0c9d8e7f6a5",
+  "0x8c58d4639c703616763858a1c69c5b4d3e2f1a0b"
+];
+const WH = { addrs: null, addrTs: 0, states: {}, ts: 0, busy: false, err: null, snapWhale: null };
+async function loadSnapshotWhales(coin) {
+  const snap = await J("./radar-snapshot.json", null, 3500);
+  if (snap && snap.coins && snap.coins[coin] && snap.coins[coin].whales) {
+    WH.snapWhale = snap.coins[coin].whales;
+  }
+}
+async function loadWhales() {
+  if (WH.busy || Date.now() - WH.ts < 25000) return;
+  WH.busy = true;
+  try {
+    await loadSnapshotWhales(STATE.sym.replace(/USDT$/, ""));
+    if (!WH.addrs || Date.now() - WH.addrTs > 6e5) {
+      const lb = await J("https://stats-data.hyperliquid.xyz/Mainnet/leaderboard", null, 12000);
+      const rows = lb && lb.leaderboardRows;
+      if (Array.isArray(rows) && rows.length) {
+        WH.addrs = rows.map(r => ({ a: r.ethAddress, v: +r.accountValue })).filter(x => x.a).sort((x, y) => y.v - x.v).slice(0, 45).map(x => x.a);
+        WH.addrTs = Date.now();
+      } else if (!WH.addrs) {
+        WH.addrs = SEED_WHALE_WALLETS;
+        WH.addrTs = Date.now();
+      }
+    }
+    const st = {};
+    for (let i = 0; i < WH.addrs.length; i += 10) {
+      await Promise.all(WH.addrs.slice(i, i + 10).map(async a => {
+        const r = await J("https://api.hyperliquid.xyz/info", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "clearinghouseState", user: a }) }, 6500);
+        if (r && Array.isArray(r.assetPositions)) st[a] = r.assetPositions.map(x => x.position);
+      }));
+    }
+    if (Object.keys(st).length) {
+      WH.states = st; WH.ts = Date.now(); WH.err = null;
+    } else if (WH.snapWhale) {
+      WH.err = "Χρήση αποθηκευμένου snapshot από GitHub";
+    } else {
+      WH.err = "Leaderboard/clearinghouse μη διαθέσιμο σε browser";
+    }
+  } finally { WH.busy = false; }
+}
+function computeWhale(coin, price) {
+  const w = { long: 0, short: 0, mL: 0, mS: 0, pL: 0, pS: 0, liqL: 0, liqS: 0, nLiq: 0, wallets: 0, total: 0, source: "live" };
+  const addrs = Object.keys(WH.states);
+  if (!addrs.length && WH.snapWhale && WH.snapWhale.total > 0) {
+    return Object.assign({}, w, WH.snapWhale, { source: "snapshot" });
+  }
+  if (!addrs.length) return null;
+  addrs.forEach(a => WH.states[a].forEach(p => {
+    if (!p || p.coin !== coin) return;
+    const sz = +p.szi, val = Math.abs(+p.positionValue) || 0;
+    if (!sz || !val) return;
+    w.wallets++;
+    const lq = +p.liquidationPx, near = ok(lq) && Math.abs(lq - price) / price <= 0.05;
+    if (sz > 0) { w.long += val; w.mL += +p.marginUsed || 0; w.pL += +p.unrealizedPnl || 0; if (near) { w.liqL += val; w.nLiq++; } }
+    else { w.short += val; w.mS += +p.marginUsed || 0; w.pS += +p.unrealizedPnl || 0; if (near) { w.liqS += val; w.nLiq++; } }
+  }));
+  w.total = w.long + w.short; w.n = addrs.length;
+  return w;
+}
+function renderWhales(coin, price) {
+  const w = computeWhale(coin, price);
+  const wc = $("wh-badge").closest(".card");
+  if (!w || !w.total) { wc.style.display = "none"; return; }
+  wc.style.display = "";
+  const lp = w.long / w.total * 100, net = w.long - w.short;
+  T("wh-badge", `${w.wallets} wallets με ${coin} • από top ${w.n}`);
+  T("wh-total", fmtMoney(w.total) + " • " + lp.toFixed(1) + "% long");
+  T("wh-ls", `${fmtMoney(w.long)} / ${fmtMoney(w.short)}`);
+  T("wh-margin", `${fmtMoney(w.mL)} / ${fmtMoney(w.mS)}`);
+  T("wh-pnl", `${fmtMoney(w.pL, true)} / ${fmtMoney(w.pS, true)}`);
+  T("wh-net", (net >= 0 ? "Net long " : "Net short ") + fmtMoney(Math.abs(net)), "right-val " + (net >= 0 ? "pos" : "neg"));
+  T("wh-liq", `${fmtMoney(w.liqL + w.liqS)} • ${w.nLiq} θέσεις (L ${fmtMoney(w.liqL)} / S ${fmtMoney(w.liqS)})`);
+}
+
+/* ===== v4.7 extras: segments, live liquidations, history ===== */
+const SEG = { sym: null, binRetail: null, bybit: null, okx: null, ts: 0, busy: false };
+async function loadSeg(sym) {
+  if (SEG.sym !== sym) { Object.assign(SEG, { sym, binRetail: null, bybit: null, okx: null, ts: 0 }); }
+  if (SEG.busy || Date.now() - SEG.ts < 20000) return;
+  SEG.busy = true;
+  try {
+    const base = sym.replace(/USDT$/, "");
+    const [b, y, o] = await Promise.all([
+      J(`https://fapi.binance.com/futures/data/globalLongShortAccountRatio?symbol=${sym}&period=5m&limit=1`),
+      J(`https://api.bybit.com/v5/market/account-ratio?category=linear&symbol=${sym}&period=5min&limit=1`),
+      J(`https://www.okx.com/api/v5/rubik/stat/contracts/long-short-account-ratio?ccy=${base}&period=5m`)
+    ]);
+    SEG.binRetail = Array.isArray(b) && b[0] ? +b[0].longAccount : null;
+    const yl = y && y.result && y.result.list && y.result.list[0];
+    SEG.bybit = yl ? +yl.buyRatio : null;
+    const od = o && o.data && o.data[0];
+    SEG.okx = od && ok(+od[1]) ? (+od[1]) / (1 + (+od[1])) : null;
+    SEG.ts = Date.now();
+  } finally { SEG.busy = false; }
+}
+function renderSeg(s) {
+  const coin = s.sym.replace(/USDT$/, ""), w = computeWhale(coin, s.price), V = s.V;
+  const rows = [], smart = [], crowd = [];
+  const row = (name, basis, lp, extra) => lp === null ? 0 : rows.push(`<div class="kv-item"><span>${name} <span class="muted">• ${basis}</span></span><span class="right-val">${lp === null ? '<span class="muted">n/a</span>' : lp.toFixed(1) + "% long" + (extra ? " • " + extra : "")}</span></div>`);
+  if (w && w.total > 0) { const lp = w.long / w.total * 100; row("HL whales", "θέσεις $ (πραγματικό)", lp, fmtMoney(w.long) + " / " + fmtMoney(w.short)); smart.push(lp); } else row("HL whales", "θέσεις $", null);
+  const bt = V.binance.longShare;
+  if (bt !== null) { row("Binance top traders", "θέσεις (position-weighted)", bt * 100, ok(V.binance.oi) ? "≈" + fmtMoney(V.binance.oi * bt) + " / " + fmtMoney(V.binance.oi * (1 - bt)) : ""); smart.push(bt * 100); } else row("Binance top traders", "θέσεις", null);
+  [["Binance retail", SEG.binRetail], ["Bybit", SEG.bybit], ["OKX", SEG.okx]].forEach(([n, v]) => {
+    const lp = Number.isFinite(v) ? v * 100 : null; row(n, "λογαριασμοί (όχι $)", lp); if (lp !== null) crowd.push(lp);
+  });
+  const sc = $("seg-badge").closest(".card");
+  if (!rows.length) { sc.style.display = "none"; return; }
+  sc.style.display = "";
+  H("seg-list", rows.join(""));
+  const avg = a => a.reduce((x, y) => x + y, 0) / a.length;
+  if (smart.length && crowd.length) {
+    $("seg-sig").closest(".bias-box").style.display = "";
+    const sm = avg(smart), cr = avg(crowd), d = sm - cr;
+    T("seg-badge", `Smart ${sm.toFixed(1)}% vs Crowd ${cr.toFixed(1)}%`);
+    T("seg-sig", Math.abs(d) < 3 ? `Συμφωνία (Δ ${d.toFixed(1)}pt): έξυπνο και κοινό στην ίδια πλευρά.`
+      : d < 0 ? `Smart πιο SHORT από το κοινό κατά ${Math.abs(d).toFixed(1)}pt → το κοινό είναι πιο long (πιθανή πίεση προς τα κάτω).`
+      : `Smart πιο LONG από το κοινό κατά ${d.toFixed(1)}pt → το κοινό είναι πιο short (πιθανό squeeze προς τα πάνω).`);
+  } else { T("seg-badge", rows.length + " πηγές"); T("seg-sig", ""); $("seg-sig").closest(".bias-box").style.display = "none"; }
+}
+
+const LQ = { ev: [], socks: [], sym: null, t0: Date.now() };
+function startLiq(sym) {
+  LQ.socks.forEach(o => { o.dead = true; clearInterval(o.timer); try { o.ws && o.ws.close(); } catch (e) {} });
+  LQ.socks = []; LQ.ev = []; LQ.sym = sym; LQ.t0 = Date.now();
+  const base = sym.replace(/USDT$/, "");
+  const add = (v, long, usd) => { if (Number.isFinite(usd) && usd > 0) { LQ.ev.push({ t: Date.now(), v, long, usd }); if (LQ.ev.length > 4000) LQ.ev.splice(0, 1000); } };
+  const mk = (name, url, onopen, onmsg) => {
+    const o = { name, dead: false, ok: false, ws: null, timer: null };
+    const conn = () => {
+      if (o.dead) return;
+      try {
+        const ws = new WebSocket(url); o.ws = ws;
+        ws.onopen = () => { o.ok = true; onopen && onopen(ws); };
+        ws.onmessage = e => { try { onmsg(JSON.parse(e.data)); } catch (x) {} };
+        ws.onclose = () => { o.ok = false; if (!o.dead) setTimeout(conn, 3000); };
+        ws.onerror = () => { try { ws.close(); } catch (x) {} };
+      } catch (x) { setTimeout(conn, 5000); }
+    };
+    o.timer = setInterval(() => { if (o.ok && o.ws) { try { o.ws.send(name === "Bybit" ? JSON.stringify({ op: "ping" }) : name === "OKX" ? "ping" : ""); } catch (e) {} } }, 20000);
+    conn(); LQ.socks.push(o);
+  };
+  mk("Binance", `wss://fstream.binance.com/ws/${sym.toLowerCase()}@forceOrder`, null,
+    m => { const o = m && m.o; if (o) add("Binance", o.S === "SELL", (+o.ap || +o.p) * (+o.z || +o.q)); });
+  mk("Bybit", "wss://stream.bybit.com/v5/public/linear", ws => ws.send(JSON.stringify({ op: "subscribe", args: ["allLiquidation." + sym] })),
+    m => { if (m.data) [].concat(m.data).forEach(d => add("Bybit", d.S === "Buy", +d.v * +d.p)); });
+  mk("OKX", "wss://ws.okx.com:8443/ws/v5/public", ws => ws.send(JSON.stringify({ op: "subscribe", args: [{ channel: "liquidation-orders", instType: "SWAP" }] })),
+    m => {
+      if (!m.data) return;
+      const ct = { BTC: 0.01, ETH: 0.1 }[base] || 1;
+      m.data.forEach(d => { if (d.instFamily !== base + "-USDT") return; (d.details || []).forEach(x => add("OKX", x.posSide === "long", +x.sz * ct * +x.bkPx)); });
+    });
+}
+function liqSum(ms) {
+  const t = Date.now() - ms; let L = 0, S = 0, n = 0, mx = 0;
+  LQ.ev.forEach(e => { if (e.t >= t) { if (e.long) L += e.usd; else S += e.usd; n++; if (e.usd > mx) mx = e.usd; } });
+  return { L, S, n, mx };
+}
+function renderLiq() {
+  const st = LQ.socks.filter(o => o.ok).map(o => o.name + "✓").join(" ") || "συνδέεται…";
+  const up = LQ.socks.filter(o => o.ok).length;
+  T("lq-status", st, "badge " + (up === 3 ? "live" : up ? "sim" : "short"));
+  const a = liqSum(3e5), b = liqSum(36e5), c = liqSum(1e12);
+  const f = x => `<span class="pos">L ${fmtMoney(x.L)}</span> / <span class="neg">S ${fmtMoney(x.S)}</span> (${x.n})`;
+  H("lq-5m", f(a)); H("lq-1h", f(b)); H("lq-sess", f(c));
+  const vs = {}; LQ.ev.forEach(e => vs[e.v] = (vs[e.v] || 0) + e.usd);
+  T("lq-venues", Object.keys(vs).length ? Object.keys(vs).map(k => `${k} ${fmtMoney(vs[k])}`).join(" • ") : "καμία ακόμα");
+  T("lq-max", b.mx ? fmtMoney(b.mx) : "--");
+  const sig = b.L + b.S < 1 ? "Καμία εκκαθάριση ακόμα (περίμενε)" : b.L > b.S * 1.5 ? "LONG washout (πωλήσεις από εκκαθαρίσεις longs)" : b.S > b.L * 1.5 ? "SHORT squeeze (αγορές από εκκαθαρίσεις shorts)" : "Μικτή / ισορροπημένη";
+  T("lq-sig", sig);
+}
+
+const HK = "radar_hist_v48";
+let HIST = {};
+try { HIST = JSON.parse(localStorage.getItem(HK) || "{}"); } catch (e) { HIST = {}; }
+function histPush(coin, rec) {
+  const a = HIST[coin] = HIST[coin] || [], l = a[a.length - 1];
+  if (l && rec.t - l.t < 30000) return;
+  a.push(rec);
+  const cut = rec.t - 86400000 * 1.05; while (a.length && a[0].t < cut) a.shift();
+  try { localStorage.setItem(HK, JSON.stringify(HIST)); } catch (e) {}
+}
+function histAt(coin, ms) {
+  const a = HIST[coin] || [], target = Date.now() - ms; let best = null;
+  for (const r of a) { if (r.t <= target) best = r; else break; }
+  return best && target - best.t < Math.max(ms * 0.3, 120000) ? best : null;
+}
+const HX = { sym: null, oi1: null, oi24: null, px1: null, px24: null, ts: 0, busy: false };
+async function loadHx(sym) {
+  if (HX.sym !== sym) Object.assign(HX, { sym, oi1: null, oi24: null, px1: null, px24: null, ts: 0 });
+  if (HX.busy || Date.now() - HX.ts < 60000) return;
+  HX.busy = true;
+  try {
+    const [o, k] = await Promise.all([
+      J(`https://fapi.binance.com/futures/data/openInterestHist?symbol=${sym}&period=1h&limit=25`),
+      J(`https://fapi.binance.com/fapi/v1/klines?symbol=${sym}&interval=1h&limit=25`)
+    ]);
+    if (Array.isArray(o) && o.length >= 25) { const v = o.map(r => +r.sumOpenInterestValue); HX.oi1 = pct(v[24], v[23]); HX.oi24 = pct(v[24], v[0]); }
+    if (Array.isArray(k) && k.length >= 25) { const c = k.map(r => +r[4]); HX.px1 = pct(c[24], c[23]); HX.px24 = pct(c[24], c[0]); }
+    HX.ts = Date.now();
+  } finally { HX.busy = false; }
+}
+function renderHx(s) {
+  const coin = s.sym.replace(/USDT$/, ""), w = computeWhale(coin, s.price);
+  const vis = (id, c) => { const e = $(id); if (e) e.closest(".kv-item").style.display = c ? "" : "none"; };
+  const has = Number.isFinite;
+  vis("hx-oi", has(HX.oi1) && has(HX.oi24)); if (has(HX.oi1)) T("hx-oi", `${fpct(HX.oi1)} / ${fpct(HX.oi24)}`);
+  vis("hx-px", has(HX.px1) && has(HX.px24)); if (has(HX.px1)) T("hx-px", `${fpct(HX.px1)} / ${fpct(HX.px24)}`);
+  const ok2 = has(HX.px1) && has(HX.oi1); vis("hx-interp", ok2);
+  if (ok2) T("hx-interp", HX.px1 >= 0 ? (HX.oi1 >= 0 ? "Νέα longs (ανοδική τάση με νέο κεφάλαιο)" : "Short covering (άνοδος από κλείσιμο shorts)") : (HX.oi1 >= 0 ? "Νέα shorts (πτώση με νέο κεφάλαιο)" : "Long liquidation / κλείσιμο longs"));
+  const wn = w && w.total > 0 ? w.long - w.short : null;
+  histPush(coin, { t: Date.now(), skew: s.netSkew, wn, oi: s.oi, px: s.price });
+  const d = (ms, key) => { const r = histAt(coin, ms); if (!r || r[key] === null || r[key] === undefined) return null; const cur = key === "skew" ? s.netSkew : wn; return cur === null ? null : cur - r[key]; };
+  const join = (arr, lbl) => arr.map((v, i) => v === null ? null : lbl[i] + " " + fmtMoney(v, true)).filter(Boolean).join(" • ");
+  const sk = join([d(9e5, "skew"), d(36e5, "skew"), d(864e5, "skew")], ["15λ", "1ω", "24ω"]);
+  const wd = join([d(36e5, "wn"), d(864e5, "wn")], ["1ω", "24ω"]);
+  vis("hx-skew", !!sk && !!s.verdict); if (sk) T("hx-skew", sk);
+  vis("hx-whale", !!wd); if (wd) T("hx-whale", wd);
+  T("hx-badge", (HIST[coin] || []).length + " snapshots");
+}
+function renderExtras(s) {
+  renderSeg(s); renderLiq(); renderHx(s);
+  loadSeg(s.sym).then(() => renderSeg(s));
+  loadHx(s.sym).then(() => renderHx(s));
+}
+
+function fundTimer() {
+  const n = new Date(), h = n.getUTCHours(), nx = Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate(), (Math.floor(h / 8) + 1) * 8);
+  const d = Math.max(0, nx - n.getTime()) / 1000, p = x => String(Math.floor(x)).padStart(2, "0");
+  return `${p(d / 3600)}:${p(d % 3600 / 60)}:${p(d % 60)}`;
+}
+
+function clearAll(msg) {
+  T("mode-badge", msg, "badge sim"); T("cov-badge", "COVERAGE: 0/4");
+  T("pivot-title", "ΔΕΝ ΒΡΕΘΗΚΑΝ ΔΕΔΟΜΕΝΑ"); T("pivot-desc", "Κανένα exchange δεν απάντησε (δίκτυο / CORS / αποκλεισμός περιοχής). Δοκίμασε Ανανέωση.");
+}
+
+async function renderAll() {
+  if (STATE.busy) return; STATE.busy = true;
+  try {
+    T("mode-badge", "ΦΟΡΤΩΣΗ...", "badge sim");
+    const F = await fetchVenues(STATE.sym, STATE.tf);
+    const s = build(STATE.sym, STATE.tf, F);
+    if (!s) { clearAll("NO DATA"); return; }
+    const V = s.V, keys = ["binance", "bybit", "okx", "hl"], coin = s.sym.replace(/USDT$/, "");
+    const vis = (id, c, sel) => { const e = $(id); if (!e) return; const p = e.closest(sel || ".kv-item"); if (p) p.style.display = c ? "" : "none"; };
+    renderWhales(coin, s.price); loadWhales().then(() => renderWhales(coin, s.price));
+
+    T("mode-badge", `LIVE (${s.active.length}/4): ${s.active.map(k => V[k].name).join(" + ").toUpperCase()}`, "badge live");
+    const missing = keys.filter(k => !V[k].ok).map(k => V[k].name);
+    T("cov-badge", missing.length ? "Χωρίς απάντηση: " + missing.join(", ") : "Όλες οι πηγές ✓");
+
+    T("s-refresh-ts", "Refresh: " + new Date().toLocaleTimeString("el-GR", { hour12: false }));
+    T("s-sym", s.sym); T("s-price", fmtPrice(s.price));
+    T("s-px-src", "Mean of " + s.active.length + " venue(s)");
+    T("s-chg", fpct(s.chg), s.chg >= 0 ? "pos" : "neg");
+    if (s.oiK.some(k => Number.isFinite(V[k].funding))) {
+      T("s-funding", (s.funding >= 0 ? "+" : "") + (s.funding * 100).toFixed(4) + "%"); T("s-fund-bias", s.funding >= 0 ? "Longs Pay" : "Shorts Pay");
+    }
+    T("s-fund-timer", "Επόμενο: " + fundTimer());
+    T("s-oi", fmtMoney(s.oi)); T("s-oi-src", s.oiK.length + "/4 venues OI");
+    const oiList = keys.filter(k => ok(V[k].oi)).map(k => ({ binance: "Bin", bybit: "Byb", okx: "OKX", hl: "HL" }[k] + " " + fmtMoney(V[k].oi)));
+    T("s-oi-split", oiList.join(" / "));
+    T("s-next-magnet", fmtPrice(s.primaryMagnet.price));
+    T("s-magnet-dist", "Απόσταση: " + fpct(pct(s.primaryMagnet.price, s.price)));
+    T("s-magnet-fuel", s.verdict ? "Βάσει verdict" : "Χωρίς verdict");
+
+    // ---- Weighted verdict ----
+    const v = s.verdict;
+    if (v) {
+      const sc = v.score, strength = Math.abs(sc) < 0.15 ? "" : Math.abs(sc) < 0.35 ? "ήπιο " : Math.abs(sc) < 0.6 ? "μέτριο " : "ισχυρό ";
+      const label = Math.abs(sc) < 0.15 ? "ΟΥΔΕΤΕΡΟ / ΜΙΚΤΟ" : sc > 0 ? strength.toUpperCase() + "ΑΝΟΔΙΚΟ" : strength.toUpperCase() + "ΠΤΩΤΙΚΟ";
+      T("vd-badge", label, "badge " + (Math.abs(sc) < 0.15 ? "sim" : sc > 0 ? "long" : "short"));
+      T("vd-score", `Score ${sc >= 0 ? "+" : ""}${(sc * 100).toFixed(0)} • συμφωνία ${v.agree.toFixed(0)}% του βάρους`);
+      const f = $("vd-fill"); f.style.background = sc >= 0 ? "#10b981" : "#ef4444";
+      f.style.left = (sc >= 0 ? 50 : 50 + sc * 50) + "%"; f.style.width = Math.abs(sc) * 50 + "%";
+      H("vd-list", s.srcs.slice().sort((a, b) => b.share - a.share).map(o => {
+        const dirTxt = Math.abs(o.score) < 0.02 ? "ουδέτερο" : o.score > 0 ? "▲ ανοδικό" : "▼ πτωτικό", cls = Math.abs(o.score) < 0.02 ? "muted" : o.score > 0 ? "pos" : "neg";
+        const det = o.kind === "pos" ? ` • L ${fmtMoney(o.long)} / S ${fmtMoney(o.short)}` : "";
+        return `<div class="kv-item" style="flex-direction:column;align-items:stretch;gap:4px"><div style="display:flex;justify-content:space-between;gap:8px"><span>${o.name} <span class="muted">• ${o.basis}</span></span><strong class="${cls}">${dirTxt} ${(o.score * 100 >= 0 ? "+" : "")}${(o.score * 100).toFixed(0)}</strong></div><div class="progress-track"><div style="height:100%;width:${o.share.toFixed(1)}%;background:${o.score >= 0 ? "#10b981" : "#ef4444"}"></div></div><div class="muted" style="font-size:10px">Βάρος ${o.share.toFixed(1)}% • ${fmtMoney(o.gross)} × αξιοπιστία ${o.r}${det}</div></div>`;
+      }).join(""));
+      const tg = sc < 0 ? `Στόχος έλξης: S1 ${fmtPrice(s.levels[3].val)} → S2 ${fmtPrice(s.levels[4].val)}` : `Στόχος έλξης: R1 ${fmtPrice(s.levels[2].val)} → R2 ${fmtPrice(s.levels[1].val)}`;
+      T("vd-target", Math.abs(sc) < 0.15 ? "Χωρίς καθαρή κατεύθυνση — τα σταθμισμένα σήματα αλληλοεξουδετερώνονται." : tg);
+      const top = s.srcs.slice().sort((a, b) => b.share - a.share)[0];
+      T("vd-note", `Κυρίαρχη πηγή: ${top.name} (${top.share.toFixed(0)}% του βάρους). Πηγές χωρίς δεδομένο δεν συμμετέχουν.`);
+    } else {
+      T("vd-badge", "ΑΝΕΠΑΡΚΗ ΔΕΔΟΜΕΝΑ", "badge sim"); T("vd-score", "--"); $("vd-fill").style.width = "0";
+      H("vd-list", ""); T("vd-target", "Καμία πηγή δεν δίνει πραγματικό δεδομένο για verdict αυτή τη στιγμή."); T("vd-note", "Δεν γίνεται εκτίμηση: περιμένουμε πραγματικά δεδομένα.");
+    }
+
+    // ---- Pivot banner ----
+    const pc = $("pivot-card"); pc.classList.remove("short-mode", "long-mode");
+    const neutral = !v || Math.abs(v.score) < 0.15;
+    const descBits = [];
+    if (v) descBits.push(`Verdict ${(v.score * 100).toFixed(0)}`);
+    if (s.lsRatio !== null) descBits.push(`L/S ποσών ${s.lsRatio.toFixed(2)}x (${s.lsLabel})`);
+    descBits.push(`Magnet ${fmtPrice(s.primaryMagnet.price)}`);
+    T("pivot-desc", descBits.join(" • ") + ".");
+    if (neutral) { T("pivot-title", v ? "NEUTRAL — ΜΙΚΤΑ ΣΤΑΘΜΙΣΜΕΝΑ ΣΗΜΑΤΑ" : "ΧΩΡΙΣ ΑΡΚΕΤΑ ΔΕΔΟΜΕΝΑ ΓΙΑ ΣΗΜΑ"); T("pivot-badge", "ΧΩΡΙΣ ΣΗΜΑ", "badge sim"); }
+    else if (s.isShort) { pc.classList.add("short-mode"); T("pivot-title", "WEIGHTED SHORT BIAS — ΠΤΩΤΙΚΟ ΣΤΑΘΜΙΣΜΕΝΟ ΣΗΜΑ"); T("pivot-badge", `ΕΤΟΙΜΟΤΗΤΑ SHORT: ${s.shortReady}%`, "badge short"); }
+    else { pc.classList.add("long-mode"); T("pivot-title", "WEIGHTED LONG BIAS — ΑΝΟΔΙΚΟ ΣΤΑΘΜΙΣΜΕΝΟ ΣΗΜΑ"); T("pivot-badge", `ΕΤΟΙΜΟΤΗΤΑ LONG: ${s.longReady}%`, "badge long"); }
+    T("m-wick", `L:${s.lowerWick}% / U:${s.upperWick}%`);
+    vis("m-cvd", s.cvdReal, ".mini-box"); T("m-cvd", fmtMoney(s.futCvd, true));
+    vis("m-skew", !!v, ".mini-box"); T("m-skew", fmtMoney(s.netSkew, true));
+    vis("m-ls", s.lsRatio !== null, ".mini-box"); if (s.lsRatio !== null) { T("m-ls", s.lsRatio.toFixed(2) + "x"); T("m-ls-lbl", "L/S ($) " + s.lsLabel); }
+
+    T("chart-heading", `${s.sym} (${s.tf}) — Χάρτης Magnets, Pivot & Liquidity Pools • candles: ${V[s.pk].name}`);
+    T("levels-tf-badge", "TF: " + s.tf);
+    drawChart(s);
+
+    T("magnet-bias-badge", s.primaryMagnet.label);
+    H("magnets-grid", s.magnets.map(m => `<div class="magnet-box"><div class="magnet-top"><span class="${m.cls}">${m.id} • ${m.title}</span><span class="badge violet">${m.tag}</span></div><div class="magnet-price">${fmtPrice(m.price)} <span class="${m.cls}" style="font-size:11px">(${m.pct})</span></div><div class="magnet-meta">${m.fuel}</div></div>`).join(""));
+
+    T("readiness-long-val", s.longReady + "%"); $("readiness-long-bar").style.width = s.longReady + "%";
+    T("readiness-short-val", s.shortReady + "%"); $("readiness-short-bar").style.width = s.shortReady + "%";
+    const pills = [`<div class="check-pill"><span>Wick Rejection</span><strong class="${s.upperWick >= 50 ? "neg" : "pos"}">${s.upperWick >= 50 ? "Upper " + s.upperWick + "% (Short)" : "Lower " + s.lowerWick + "% (Long)"}</strong></div>`];
+    if (v) pills.push(`<div class="check-pill"><span>Weighted Net $</span><strong class="${v.netEff >= 0 ? "pos" : "neg"}">${fmtMoney(v.netEff, true)}</strong></div>`);
+    if (s.cvdReal) pills.push(`<div class="check-pill"><span>Futures CVD</span><strong class="${s.futCvd < 0 ? "neg" : "pos"}">${fmtMoney(s.futCvd, true)}</strong></div>`);
+    pills.push(`<div class="check-pill"><span>Magnet Pull</span><strong class="violet-txt">${fmtPrice(s.primaryMagnet.price)}</strong></div>`);
+    H("pivot-checks-grid", pills.join(""));
+    T("bias-pill", neutral ? "ΧΩΡΙΣ ΣΗΜΑ" : s.isShort ? "SHORT BIAS" : "LONG BIAS", "badge " + (neutral ? "sim" : s.isShort ? "short" : "long"));
+    T("bias-headline", neutral ? "Ουδέτερη κλίση (σταθμισμένο verdict)" : s.isShort ? "Πτωτική Κλίση (σταθμισμένο verdict, Down Magnet)" : "Ανοδική Κλίση (σταθμισμένο verdict, Up Magnet)");
+    T("bias-detail", v ? `Score ${(v.score * 100).toFixed(0)} από ${s.srcs.length} πηγές. Συμφωνία ${v.agree.toFixed(0)}% του βάρους. Μαγνήτης στα ${fmtPrice(s.primaryMagnet.price)}.` : "Δεν υπάρχουν πραγματικά δεδομένα για κατεύθυνση.");
+    T("b-magnet-target", `${s.primaryMagnet.label} (${fmtPrice(s.primaryMagnet.price)})`);
+    T("b-cvd-taker", s.cvdReal ? `${fmtMoney(s.futCvd, true)} • Taker ${s.taker.toFixed(1)}%` : "μη διαθέσιμο");
+    vis("b-cvd-taker", s.cvdReal, ".sub-cell");
+
+    // ---- CVD (μόνο πραγματικό) ----
+    const cvdCard = $("cvd-fut").closest(".card");
+    cvdCard.style.display = s.cvdReal ? "" : "none";
+    if (s.cvdReal) {
+      T("cvd-fut", fmtMoney(s.futCvd, true), "right-val " + (s.futCvd >= 0 ? "pos" : "neg"));
+      vis("cvd-spot", s.spotCvd !== null); if (s.spotCvd !== null) T("cvd-spot", fmtMoney(s.spotCvd, true), "right-val " + (s.spotCvd >= 0 ? "pos" : "neg"));
+      T("cvd-taker", `${s.taker.toFixed(1)}% (${s.taker >= 50 ? "Buyers" : "Sellers"})`);
+      T("cvd-flow-status", s.futCvd < 0 ? "Net Sell Flow / Supply" : "Net Buy Flow / Demand");
+      T("cvd-state-badge", s.futCvd < 0 ? "SELL FLOW" : "BUY FLOW");
+    }
+
+    T("vol-dump", fmtMoney(s.dump)); T("vol-bounce", fmtMoney(s.bounce));
+    T("vol-ratio", (s.bounce / (s.dump || 1) * 100).toFixed(1) + "%");
+    T("wick-low", s.lowerWick + "%"); T("wick-high", s.upperWick + "%");
+    T("vol-regime-badge", s.upperWick >= 50 ? "UPPER WICK" : "LOWER WICK");
+
+    H("levels-grid", s.levels.map(l => `<div class="lvl-box"><div class="lvl-head"><span class="${l.cls}">${l.tag} • ${l.name}</span><span class="${l.cls}">${l.pct}</span></div><div class="lvl-price">${fmtPrice(l.val)}</div><div style="font-size:10px" class="muted">${l.kind}</div></div>`).join(""));
+
+    H("tactical-list", `
+      <div class="tac-item"><div class="tac-top"><span class="neg">1. Ζώνη Short Fade (Supply / R1–R2)</span><span>${fmtPrice(s.levels[2].val)} – ${fmtPrice(s.levels[1].val)}</span></div><div class="muted">Απόρριψη upper wick κοντά σε R1/R2 όταν το Weighted Verdict είναι πτωτικό.</div></div>
+      <div class="tac-item"><div class="tac-top"><span class="pos">2. Ζώνη Long Pivot (Demand / S1–S2)</span><span>${fmtPrice(s.levels[4].val)} – ${fmtPrice(s.levels[3].val)}</span></div><div class="muted">Σάρωση SSL + απορρόφηση ροής όταν το Weighted Verdict στρέφεται ανοδικά.</div></div>
+      <div class="tac-item"><div class="tac-top"><span class="warn">3. Failed Auction / Short Squeeze Trigger</span><span>→ ${fmtPrice(s.magnets[0].price)}</span></div><div class="muted">Ενεργοποιείται όταν το σταθμισμένο score περνά θετικό.</div></div>
+      <div class="tac-item"><div class="tac-top"><span class="violet-txt">4. Primary Liquidity Magnet &amp; Tail</span><span>${fmtPrice(s.primaryMagnet.price)} / ${fmtPrice(s.magnets[3].price)}</span></div><div class="muted">Κύριος μαγνήτης έλξης τιμής και ακραίο όριο cascade.</div></div>`);
+    renderExtras(s);
+  } catch (e) {
+    console.error(e); clearAll("ERROR");
+  } finally { STATE.busy = false; }
+}
+
+document.querySelectorAll(".btn[data-sym]").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".btn[data-sym]").forEach(x => x.classList.remove("active"));
+  b.classList.add("active"); STATE.sym = b.dataset.sym; startLiq(STATE.sym); renderAll();
+}));
+document.querySelectorAll(".tf-btn").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".tf-btn").forEach(x => x.classList.remove("active"));
+  b.classList.add("active"); STATE.tf = b.dataset.tf; renderAll();
+}));
+$("btn-refresh").addEventListener("click", renderAll);
+setInterval(() => { const e = $("s-fund-timer"); if (e && e.textContent.startsWith("Επόμενο")) e.textContent = "Επόμενο: " + fundTimer(); }, 1000);
+setInterval(renderAll, 5000);
+startLiq(STATE.sym);
+renderAll();
+</script>
+</body>
+</html>
