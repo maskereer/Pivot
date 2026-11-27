@@ -1,23 +1,23 @@
 {
-  "updatedAt": "2026-11-26T21:40:19.354Z",
+  "updatedAt": "2026-11-27T03:49:07.485Z",
   "coins": {
     "BTC": {
       "symbol": "BTCUSDT",
       "price": 0,
       "binanceOiUsd": 0,
-      "okxOiUsd": 2625204339,
+      "okxOiUsd": 2645917331,
       "whales": {
-        "long": 3296679,
-        "short": 66085127,
-        "total": 69381806,
-        "mL": 164834,
-        "mS": 2389652,
-        "pL": 19227,
-        "pS": 15650269,
+        "long": 536358,
+        "short": 52399904,
+        "total": 52936262,
+        "mL": 26818,
+        "mS": 1715468,
+        "pL": 8024,
+        "pS": 8202359,
         "liqL": 0,
         "liqS": 0,
         "nLiq": 0,
-        "wallets": 6,
+        "wallets": 5,
         "n": 40
       }
     },
@@ -25,19 +25,19 @@
       "symbol": "ETHUSDT",
       "price": 0,
       "binanceOiUsd": 0,
-      "okxOiUsd": 1326264343,
+      "okxOiUsd": 1354293691,
       "whales": {
-        "long": 71539,
-        "short": 72914900,
-        "total": 72986439,
-        "mL": 23846,
-        "mS": 3381527,
-        "pL": 9,
-        "pS": 21382934,
+        "long": 0,
+        "short": 75264990,
+        "total": 75264990,
+        "mL": 0,
+        "mS": 3922094,
+        "pL": 0,
+        "pS": 10515731,
         "liqL": 0,
         "liqS": 0,
         "nLiq": 0,
-        "wallets": 6,
+        "wallets": 5,
         "n": 40
       }
     }
